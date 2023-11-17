@@ -1,16 +1,18 @@
-### Hi there 👋
+## I'm Sungbun Yoon, a back-End developer strt Githup 2023.11.17 Let's go!
+```
+# My Skill Set 
 
-<!--
-**sungbinyunbaby/sungbinyunbaby** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+Backend
 
-Here are some ideas to get you started:
+DB
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+DevOps
+```
+```
+## Intruoduce
+[History](history/README.md)
+```
+```
+## Skill
+[Github](GitbubToUse/README.md)
+```
