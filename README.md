@@ -14,4 +14,4 @@ DevOps
 
 
 ## Skill
-[Github](GitbubToUse/README.md)
+[Github](GithubToUse/README.md)
