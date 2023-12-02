@@ -12,7 +12,7 @@ DevOps
 ## Intruoduce
 Hi, I'm sungbin Yoon.  
 I want to grow into a developer.   
-I hope you have a good day!
+### I hope you have a good day!
 
 
 ## Study
