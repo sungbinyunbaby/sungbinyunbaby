@@ -10,7 +10,9 @@ DevOps
 ```
 
 ## Intruoduce
-[History](history/README.md)
+Hi, I'm sungbin Yoon.  
+I want to grow into a developer.   
+I hope you have a good day!
 
 
 ## Study
