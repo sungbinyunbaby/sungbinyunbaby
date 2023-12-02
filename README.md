@@ -13,7 +13,7 @@ DevOps
 [History](history/README.md)
 
 
-## Skill
+## Study
 - [Github](GithubToUse/README.md)
 - [Java](Java/README.md)
 
