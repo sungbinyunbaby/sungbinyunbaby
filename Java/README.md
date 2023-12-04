@@ -9,9 +9,9 @@
 그냥 넘어갈까 하다가 그냥 알아보기로 했다...찝찝,,,
 
 - 23.12.05 08:02    
-[Algorithm String 연산(StringBuilder/StringBuffer)](Algorithm/String+연산자&StringBuilder&StringBuffer)  
+[Algorithm String 연산(StringBuilder/StringBuffer)](Algorithm/String+연산자&StringBuilder&StringBuffer.md)  
 알고리즘 수업 중 사용한 코드 이론정리.
 
 - 23.12.05 08:02  
-[Algorithm BufferReader](Algorithm/Buffer&Scanner)  
+[Algorithm BufferReader](Algorithm/Buffer&Scanner.md)  
 알고리즘 수업 중 사용한 코드 이론정리.
