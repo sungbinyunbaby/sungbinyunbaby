@@ -12,6 +12,6 @@
 [Algorithm String 연산(StringBuilder/StringBuffer)](Algorithm/String+연산자&StringBuilder&StringBuffer)  
 알고리즘 수업 중 사용한 코드 이론정리.
 
-- 23.12.03 08:02  
+- 23.12.05 08:02  
 [Algorithm BufferReader](Algorithm/Buffer&Scanner)  
 알고리즘 수업 중 사용한 코드 이론정리.
