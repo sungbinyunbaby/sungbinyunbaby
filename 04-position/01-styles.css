@@ -1,0 +1,86 @@
+body{
+    margin: 40px;
+}
+
+.box{
+    width: 100px;
+    height: 100px;
+    background-color: blue;
+    color: white;
+    box-sizing: border-box;
+}
+
+/* relative */
+/*  */
+.relative{
+    background-color: green;
+    position: relative;
+    left: 50px;
+    bottom: 50px;
+}
+
+/* absolute */
+.absolute{
+    background-color: yellowgreen;
+    position: absolute;
+    left: 50px;
+    top: 50px;
+}
+
+#big-box{
+    position: relative;
+    width: 500px;
+    height: 500px;
+    background-color: grey;
+}
+
+#menu-bar{
+    position: relative;
+    width: 500px;
+    height: 100px;
+    box-sizing: border-box;
+    border: 0.5px solid lightgray;
+}
+
+#menu-next-botton{
+    position: absolute;
+    height: 80px;
+    width: 80px;
+    box-sizing: border-box;
+    border: 0.5px solid lightgray;
+    border-radius: 50%;
+    right: -40px;
+    top: 10px;
+
+    padding: 20px;
+    font-size: 40px;
+    text-align: center;
+}
+
+/* fixed 화면에 고정 움직이지 않음 */
+.fixed{
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    background-color: magenta;
+}
+
+.fixed-2{
+    position: fixed;
+    left: 50px;
+    top: 50px;
+    background-color: blueviolet;
+    border-radius: 50%;
+}
+
+/* sticky 마치 화면에 달라 붙는것 같다. */
+.sticty{
+    position: sticky;
+    background-color: chocolate;
+    top: 100px;
+    left: 100px;
+}
+
+.bottom-margin{
+    margin-bottom: 1000px;
+}

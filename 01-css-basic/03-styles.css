@@ -1,0 +1,12 @@
+/* p는 모든 p 요소들을 지칭한다. */
+p {
+    color: purple;
+}
+/* id는 하나의 요소를 지칭한다. */
+#red {
+    color: red;
+}
+/*  class는 특정 요소들을 지칭한다. */
+.blue {
+    color: blue;
+}

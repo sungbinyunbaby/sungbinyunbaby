@@ -1,0 +1,14 @@
+h1{
+    text-align: center;
+    font-style: italic;
+}
+
+h2{
+    color: dodgerblue;
+    background-color: aliceblue;
+}
+
+p{
+    text-align: justify;
+    font-weight: bold;
+}

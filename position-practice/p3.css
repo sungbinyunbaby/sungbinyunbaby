@@ -1,0 +1,17 @@
+#container {
+  width: 800px;
+  height: 50px;
+}
+
+.item {
+  text-align: center;
+  width: 100px;
+  height: 50px;
+  box-sizing: border-box;
+  border: 0.5px solid lightgrey;
+}
+
+.item-selected {
+  color: white;
+  background-color: #42be6f;
+}

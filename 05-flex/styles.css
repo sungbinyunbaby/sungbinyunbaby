@@ -1,0 +1,110 @@
+.container{
+    background-color: skyblue;
+    color: white;
+
+    width: 590;
+    height: 300px;
+    box-sizing: border-box;
+
+    display: flex;
+}
+
+.box{
+    background-color: dodgerblue;
+    /* border: 0.5px solid gray; */
+    box-sizing: border-box;
+    width: 100px;
+    height: 100px;
+
+}
+
+/* flex-direction */
+.flex-row{
+    /* 왼쪽에성 오른쪽 기본값 */
+    flex-direction: row;
+}
+
+.flex-row-reverse{
+    /* 오른쪽에서 왼쪽 */
+    flex-direction: row-reverse;
+}
+
+.flex-column{
+    /* 위에서 아래로 */
+    flex-direction: column;
+}
+
+.flex-column-reverse{
+    flex-direction: column-reverse;
+}
+
+/* flex-wrap */
+/* 크기에 맞게 화면 배치(안찌그러지게) */
+.flex-wrap{
+    flex-wrap: wrap;
+}
+.flex-nowrap{
+    flex-wrap: nowrap;
+}
+
+/* justify-content */
+/* 주축의 방향으로 정렬 */
+.justify-content-start{
+    /* 시작방향 */
+    justify-content: flex-start;
+}
+.justify-content-end{
+    /* 끝방향 */
+    justify-content: flex-end;
+}
+.justify-content-center{
+    /* 시작방향 */
+    justify-content: center;
+}
+
+/* 여백을 배분 (양 옆에 동일한 크기의 여백)*/
+.justify-content-around{
+    justify-content: space-around;
+}
+
+/* 여백을 요소들 사이에만 (끝에는 ㄴㄴ, 그래서 벽에 붙을 수 있음) */
+.justify-content-between{
+    justify-content: space-between;
+}
+
+/* 모든게 동일한게 evenly */
+.justify-content-evenly{
+    justify-content: space-evenly;
+}
+
+/* align-items */
+/* 교차축 방향으로 정렬 */
+.align-items-start{
+    /* 교차축 시작방향 */
+    align-items: flex-start;
+}
+.align-items-end{
+    /* 교차축 끝방향 */
+    align-items: flex-end;
+}
+.align-items-center{
+    /* 교차축 가운데 */
+    align-items: center;
+}
+.align-items-strech{
+    /* 교차축 ????? */
+    align-items: stretch;
+}
+
+/* align-content */
+/* 요소 줄 단위로 정렬 (한 줄이 하나의 요소다) */
+.align-content-start{
+    align-content: flex-start;
+}
+.align-content-end{
+    align-content: flex-start;
+}
+.align-content-start{
+    align-content: flex-start;
+}
+

@@ -1,0 +1,47 @@
+/* 요소 선택자 */
+/* 요소들을 대상으로 CSS를 적용한다. */
+/* 모든 h1에 적용 */
+h1{
+    color: dodgerblue;
+}
+/* 모든 p요소를 grey 색으로 */
+p{
+    color: grey;
+}
+
+/* 모든 a요소를 red 색으로 */
+a{
+    color: red;
+}
+
+/* id 선택자 */
+#id-selector-h1{
+    color: dodgerblue;
+}
+
+#id-selector-p{
+    color: chocolate;
+}
+
+#id-selector-h2{
+    color: coral;
+}
+
+/* class 선택자 */
+/* 요서의 class 속성을 가지고 적용한다. */
+.message-sender{
+    color: purple;
+}
+.message-body{
+    color: blue;
+}
+
+/* 전체 선책자 */
+*{
+    text-align: center;
+}
+
+/* 띄어쓰기 없이 합치면 모두 만족하는 요소 선택 */
+#tjdqls.username{
+    color: dodgerblue;
+}
