@@ -18,5 +18,5 @@ I want to grow into a developer.
 ## Study
 - [Github](GithubToUse/README.md)
 - [Java](Java/README.md)
-- [Spring](Spring/README.md.md)
+- [Spring](Spring/README.md)
 
