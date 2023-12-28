@@ -6,4 +6,4 @@
 
 [23.12.27SpringBoot_02 IoC, DI](SpringBoot_02.md)
 
-[23.12.28SpringBoot_02 MVC, CRUD](SpringBoot_03.md)
+[23.12.28SpringBoot_03 MVC, CRUD](SpringBoot_03.md)
