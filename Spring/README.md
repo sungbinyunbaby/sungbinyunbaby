@@ -7,3 +7,7 @@
 [23.12.27SpringBoot_02 IoC, DI](SpringBoot_02.md)
 
 [23.12.28SpringBoot_03 MVC, CRUD](SpringBoot_03.md)
+
+[24.01.24사용자지정유효성검사](사용자지정유효성검사.md)
+
+[24.01.24S Testing](Testing.md)
