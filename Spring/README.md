@@ -10,4 +10,6 @@
 
 [24.01.24사용자지정유효성검사](사용자지정유효성검사.md)
 
-[24.01.24S Testing](Testing.md)
+[24.01.24 Testing](Testing.md)
+
+[24.01.25 Spring Security](Security.md)
