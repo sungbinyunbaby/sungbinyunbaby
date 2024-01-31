@@ -17,3 +17,7 @@
 [24.01.26 HandlerInterceptor, Filter](HandlerInterceptor&Filter.md)
 
 [24.01.29 JWT](JWT.md)
+
+[24.01.31 mysqlworkbeanch](mysqlworkbeanch.md)
+
+[24.01.31 @MappedSuperclass&@EntityListeners(AuditingEntityListener.class)](jpa추가기능.md)

@@ -53,7 +53,7 @@ CSRF(Cross-Site Request Forgery): 희생자의 권한을 사용하여 특정 웹
 
 
 
-# JWT 생성
+# JWT 생성 JwtTokenUtils class생성 - jwt를 만들고 관련기능을 만든다.
 1. jwtTokenUtils 클래스를 만들어 토큰에 관련된 정보를 넣는다. JWT 자체와 관련된 기능을 만든다. Service 클래스라고 보면 된다.
 
      암호키 만들기-비밀번호를 암호화 하고, 파싱하고 검사한다.
@@ -184,6 +184,149 @@ CSRF(Cross-Site Request Forgery): 희생자의 권한을 사용하여 특정 웹
     }
     ```
 
-## Security에 이 사용자가 인증이 된 사용자인 것을 알려줘야 한다. 필터에
+# 필터를 작성한다. Security에 이 사용자가 인증이 된 사용자인 것을 알려줘야 한다.
+시큐리티에서 인증을 할 때는 필터를 통해서 인증을 하고, 지원하지 않는 방식으로 인증을 진행을 하고 싶으면 직접 필터를 만들어서 등록을 시켜주면 원하는 방식대로 인증을 할 수 있다.
 
-아직 필터부분 못함 4교시
+- 필터 사용법.  
+    extends OncePerRequestFilter //한번에 요청에는 단 한번만 실행하도록  
+    @Override protected void doFilterInternal ///필터구현 메서드.  
+    인증과 관련된 필터는 빈으로 등록하지 않는다. 왜냐하면 WebSecurityConfig 클래스에 수동으로 등록을 해 줄 것이기 때문에 자동 등록을 하지 않는다. 만약 빈으로 등록을 하였다면 빈 등록이 중복이 되기 때문이다.  
+
+1. Authorization 헤더를 회수  
+    String authHeader
+        = request.getHeader(HttpHeaders.AUTHORIZATION);  
+     //많이 사용하다 보니 스프링에서 상수로 존재한다.  
+
+2. Authorization 헤더가 존재하는지 + Bearer로 시작하는지  확인한다.  
+    (성공과 실패와 관계없이,,,헤더가 없더라도(jwt) 멈추지 않고 진행한다. doFilter 밖으로 보내줘야 한다. jwt가 없는 사용자는 인증이 없는 사용자도 있지만, 로그인을 하는 과정에 있는 사용자도 있다. 그래서 jwt가 없다고 통과를 못시키면 로그인을 하지 못하게 된다. 일단 여기서는 헤더가 있는지, Bearer로 시작하는지 사용자와 그렇지 않은 사용자만 나누면 되는 것이다. doFilter()에서 나간 후 AuthorizationFilter 클래스에서 jwt가 없는 사용자를 골라 상황에 맞게 처리를 할 것이다. 막거나 통과시키거나,,,  
+    만약 다른 방법을 하고 싶다면 정상이거나 jwt가 없을 때는 통과시키고, 비정상일 경우에는 막겠다. 그 후 어느 시점에 doFilter을 호출할 것인지 명확하게 잘 정한다.)  
+    if (authHeader != null && authHeader.startsWith("Bearer ")) { //=>인증이 성공하던 성공하지 않던 무조건 다음 필터를 호출해줘야 한다.(5번)  
+    String token = authHeader.split(" ")[1]; //
+   
+3. Token이 유효한 토큰인지  
+    // 3. Token이 유효한 토큰인지 확인. jwtTokenUtils의 validate메서드를 활용  
+    if (jwtTokenUtils.validate(token))
+   
+4. 유효하다면 해당 토큰을 바탕으로 사용자 정보를 SecurityContext에 등록 
+    SecurityContext context = SecurityContextHolder.createEmptyContext(); //비어있는  context를 만들고
+
+    4-1.사용자 정보 회수
+    ```java
+    String username = jwtTokenUtils
+        .parseClaims(token) //반환하는 메서드
+        .getSubject(); //누구인지,,,
+
+    UserDetails userDetails = manager.loadUserByUsername(username);
+    for (GrantedAuthority authority :userDetails.getAuthorities()) {
+    log.info("authority: {}", authority.getAuthority());
+    }
+    ```
+    
+    4-2.인증 정보 생성
+    ```java
+    AbstractAuthenticationToken authentication =
+        new UsernamePasswordAuthenticationToken(
+                  CustomUserDetails.builder()
+                          .username(username)
+                          .build(),
+    ```
+    
+    4-1.인증 정보 등록
+    ```java
+    // 인증 정보 등록
+    context.setAuthentication(authentication);
+    SecurityContextHolder.setContext(context);
+    ```
+    
+    5. 다음 필터 호출  
+    // 5. 다음 필터 호출  
+    // doFilter를 호출하지 않으면 Controller까지 요청이 도달하지 못한다.  
+    filterChain.doFilter(request, response);
+
+    필터를 다 만들었으면 WebSecurityConfig로 가서  
+    .addFilterBefore를 사용해서 특정 필터 앞에 나만의 필터를 넣는다.
+
+    ```java
+        Slf4j
+    //@RequiredArgsConstructor
+    //여기 사용자가 보낸 JWT가 정당한지 정당하지 않은지 판단을 해주면 된다.
+    public class JwtTokenFilter extends OncePerRequestFilter {
+        private final JwtTokenUtils jwtTokenUtils;
+        // 사용자 정보를 찾기위한 UserDetailsService 또는 Manager
+        private final UserDetailsManager manager;
+
+        public JwtTokenFilter(
+                JwtTokenUtils jwtTokenUtils,
+                UserDetailsManager manager
+        ) {
+            this.jwtTokenUtils = jwtTokenUtils;
+            this.manager = manager;
+        }
+
+        @Override
+        protected void doFilterInternal(
+                HttpServletRequest request,
+                HttpServletResponse response,
+                FilterChain filterChain
+        ) throws ServletException, IOException {
+            log.debug("try jwt filter");
+            // 1. Authorization 헤더를 회수
+            String authHeader
+                    // = request.getHeader("Authorization");
+                    = request.getHeader(HttpHeaders.AUTHORIZATION); //많이 사용하다 보니 스프링에서 상수로 존재한다.
+                    //getHeader은 null을 반환할 수 있는 메서드 그래서 Authorization 헤더가 존재하는지 + Bearer로 시작하는지가 필요하다.
+            // 2. Authorization 헤더가 존재하는지 + Bearer로 시작하는지
+            if (authHeader != null && authHeader.startsWith("Bearer ")) { //=>인증이 성공하던 성공하지 않던 무조건 다음 필터를 호출해줘야 한다.(5번)
+                String token = authHeader.split(" ")[1]; //
+                // 3. Token이 유효한 토큰인지 확인. jwtTokenUtils의 validate메서드를 활용.
+                if (jwtTokenUtils.validate(token)) {
+                    // 4. 유효하다면 해당 토큰을 바탕으로 사용자 정보를 SecurityContext에 등록
+                    SecurityContext context = SecurityContextHolder.createEmptyContext(); //비어있는  context를 만들고
+                    // 사용자 정보 회수
+                    String username = jwtTokenUtils
+                            .parseClaims(token)
+                            .getSubject();
+
+                    UserDetails userDetails = manager.loadUserByUsername(username);
+                    for (GrantedAuthority authority :userDetails.getAuthorities()) {
+                        log.info("authority: {}", authority.getAuthority());
+                    }
+
+                    // 인증 정보 생성
+                    AbstractAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+    //                                CustomUserDetails.builder()
+    //                                        .username(username)
+    //                                        .build(),
+                                    // manager에서 실제 사용자 정보 조회
+                                    // manager.loadUserByUsername(username),
+                                    userDetails,
+                                    token,
+                                    userDetails.getAuthorities()
+                            );
+                    // 인증 정보 등록
+                    context.setAuthentication(authentication);
+                    SecurityContextHolder.setContext(context);
+                    log.info("set security context with jwt");
+                }
+                else {
+                    log.warn("jwt validation failed");
+                }
+            }
+            // 5. 다음 필터 호출
+            // doFilter를 호출하지 않으면 Controller까지 요청이 도달하지 못한다.
+            filterChain.doFilter(request, response);
+        }
+        }
+    ```
+
+    ```java
+    .addFilterBefore( //특정 필터 앞에 나만의 필터를 넣는다.
+                        new JwtTokenFilter( //JwtTokenFilter는 빈이 아니지만 빈객체를 받는 것은 가능하다.
+                                jwtTokenUtils,
+                                manager
+                        ),
+                        AuthorizationFilter.class
+                )
+    ```
+
