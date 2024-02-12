@@ -21,3 +21,13 @@
 [24.01.31 mysqlworkbeanch](mysqlworkbeanch.md)
 
 [24.01.31 @MappedSuperclass&@EntityListeners(AuditingEntityListener.class)](jpa추가기능.md)
+
+[24.02.05 영속성컨텍스트](영속성컨텍스트.md)
+
+[24.02.05 낙관적락&비관적락](낙관적락,비관적락.md)
+
+[24.02.05 N+1 (ORM)](N+1.md)
+
+[24.02.07 Querydsl동적쿼리](Querydsl동적쿼리.md)
+
+[24.02.07 QuerydslWithSpringDataJPA](QuerydslWithSpringDataJPA.md)

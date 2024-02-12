@@ -1,4 +1,4 @@
-# JWT
+# JWT - JSON으로 표현된 정보를 안전하게 주고 받기 위한 토큰의 일종이다. 
 Json Web Token
 
 JSON으로 표현된 정보를 안전하게 주고 받기 위한 토큰의 일종이다.  
@@ -329,4 +329,245 @@ CSRF(Cross-Site Request Forgery): 희생자의 권한을 사용하여 특정 웹
                         AuthorizationFilter.class
                 )
     ```
+
+# 만들어보기!
+1. jwt를 사용하기 위한 환경설정
+2. jwt 생성과 검증을 위한 클래스 생성(JwtTokenUtils) - 암호화, [jwt에 정보 담기, jwt 생성]
+3. jwt를 발급 받을 엔트포인트 만들기(TokenController) - 
+    UserDetailsManager로부터 UserDeatils를 받아오면 generateToken()을 호출하여 jwt를 실제로 만들어 준다.  
+    (사용자가 username과 password를 제공하고, 정당한 정보이면 응답으로 사용자의 정보에 맞게 jwt를 만들어 토큰에 저장한다.)  
+4. jwt 기능 추가 - 들어온 토큰이 정당성이 있는 토큰인지 확인, 정당하면 jwt 반환해주기
+5. getmapping으로 토큰을 반환한다. controller에서 확인.
+6. filter를 바탕으로 jwt가 전달이 되었을 때 인증이 된 사용자라는 것을 알려주자.
+
+    ### jwt를 사용하기 위한 환경설정
+    1. application-mysql.yaml
+        ```java
+        spring:
+            datasource:
+                driver-class-name: com.mysql.cj.jdbc.Driver
+                url: jdbc:mysql://127.0.0.1:3306/memo
+                username: projectMemo
+                password: # mysql workbench 비밀번호 입력.
+
+        jpa:
+            database: mysql
+            hibernate:
+                ddl-auto: create
+            show-sql: true
+        
+        //JWT를 만들기 위해서는 JWT의 위변조 상태를 감지하기 위한 암호키. 간단하게 문자열로 작성.
+        jwt:
+            secret: aaaabbbsdifqbvaesoioegwaaaabbbsdifqbvaesoioegwaaaabbbsdifqbvaes
+        ```
+        
+    2. application.yaml
+            ```java
+        spring:
+            profiles:
+                active: mysql    
+        ```
+
+    3. build.gradle jwt 추가하기.
+        ```java
+        //jwt
+        implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+        runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+        runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+        ```
+
+    
+    ### jwt 생성 - 암호화, jwt 정보담기, jwt 발급하기
+    jwt를 생성하기 위한 프레임워크 사용방법이라고 보면 된다.
+
+    JwtTokenUtils class 만들기
+    
+    @Component를 추가하여 빈 등록.
+
+    1. 암호화
+    @Value를 사용하여 yaml에 설정한 암호키를 받아온다.
+    *주의사항 lombok의 Value가 아니라 spring의 Value를 선택 해야 한다.
+    ```java
+    //springframework의 Value 선택!!
+    import org.springframework.beans.factory.annotation.Value;
+    @Slf4j
+    @Component
+    public class JwtTokenUtils {
+        //1. 암호키 지정
+        public JwtTokenUtils(
+                //이렇게 하면 암호키를 받아올 수 있다.
+                @Value("${jwt.secret}")
+                String jwkSecret
+        ){
+
+        }
+    }
+    ```
+    2. jwt에 담고 싶은 정보를 정한다.
+        1. UserDetails의 규약을 사용하여 jwt에 담고 싶은 정보를 정한다.(claims 사용)
+        2. jwt에 담고 싶은 정보를 정했으니 그 정보와 암호를 이용하여 jwt를 발급한다.(bulider)
+    ```java
+    //jwt를 발급하는 메서드
+    public String generateToken(UserDetails userDetails) {
+        //UserDetails의 규약을 따른다.
+        //jwt에 담고 싶은 정보를 Claims로 만든다.
+        //항상 담아두는 정보 표준:
+        //sub:누구인지, iat: 언제 발급 되었는지(발급일), exp: 언제 만료 예정인지(만료일)
+        //Claims는 jjwt에 정의 된 map 인터페이스를 상속 받는 인터페이스.
+        //jjwt에 담길 정보를 의미한다.
+        //map 처럼 데이터를 추가하여 jwt에 포함시킬 데이터를 정의할 수 있다. 일반적인 jwt 외의 정보를 포함하고 싶다면 Map.put 사용가능.
+        //현재 사용자를 식별할 수 있는 username과 발급일과 만료일을 나타내는 iat, exp를 설정한다.
+        //jwts 사용: jwt를 생성하고 구문 분석하는 정적 유틸리티 클래스.
+
+        Instant now = Instant.now();//현재 호출 되었을 때 시간 (epoch time)을 받아온다.
+        Claims jwtClaims = Jwts.claims()
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(Date.from(now)) //언제 발급 되었는지
+                .setExpiration(Date.from(now.plusSeconds(20L))); //언제 만료 예정인지
+    //        jwtClaims.put("test", "claim"); //jwt 외의 정보를 포함하고 싶다면 이렇게 사용가능(claims는 map 인터페이스를 상속 받는 인터페이스여서 가능)
+
+        //최종적으로 jwt 발급
+        return Jwts.builder()
+                .setClaims(jwtClaims)
+                .signWith(signinqkey)
+                .compact(); 
+                //compact() 메소드가 실제 Token을 문자열로 만들어 반환해 준다.
+                //Actually builds the JWT and serializes it to a compact, URL-safe string according to the JWT Compact Serialization
+    }
+    ```
+    3. 사용자의 요청을 바탕으로 위에서 만든 jwt를 토큰에 저장시킨다.
+        토큰을 만든다.(로그인을 하지 않은 사용자를 가정해 만든다.)
+        1. 클라이언트의 username이 존재하는지 확인한다.
+        2. 있다면 username의 튜블의 비밀번호와 인코딩된 비밀번호가 일치하는지 대조한다.
+        3. 비밀번호가 같다면 username에 관련된 튜플을 jwt에 넣고 jwt를 발급받고 토큰에 넣는다.
+        *주의사항 비밀번호 확인: PasswordEncoder.matches() 사용. 날것의 비밀번호와 암호화된 비밀번호가 서로 매치되는지 비교할 수 있다.(equals ㄴㄴ)  
+        *주의사항 오버라이딩 재사용: UserDetails userDetails // 로그인 과정(사용자 인증 과정)
+        = manager.loadUserByUsername(dto.getUsername());  
+        loadUserByUsername는 이미 jpaUserDetailsManager에서 이미 오버라이딩하여 재사용을 했기 때문에 재사용한 메서드를 사용하게 된다.
+
+        ```java
+        @Data
+        public class JwtResponseDto {
+            private String token;
+        }
+
+        @Data
+        public class JwtRequestDto {
+            private String username;
+            private String password;
+        }
+        ```
+
+        ```java
+        @Slf4j
+        @RestController
+        @RequestMapping("token")
+        @RequiredArgsConstructor
+        public class TokenController {
+            //jwt를 발급하기 위한 Bean
+            private final JwtTokenUtils jwtTokenUtils;
+            //사용자가 정보를 회수하기 위한 Bean
+            //UserDetailService도 된다.=>서로 의존적인 관계를 덜 만들기에 적합하다.
+            //+오롯이 사용자의 정보를 판단하기 위한 서비스를 만드는 것이기 때문에 좀 더 적합하다고 생각
+            private final UserDetailsManager manager;
+            //사용자가 제공한 아이디 비밀번호를 비교하기 위한 클래스
+            //현재는 서비스를 불리하지 않고 여기서 해보겠다.
+            private final PasswordEncoder passwordEncoder;
+
+            //1. 클라이언트의 username이 존재하는지 확인한다.
+            //2. 있다면 username의 튜블의 비밀번호와 인코딩된 비밀번호가 일치하는지 대조한다.
+            //3. 비밀번호가 같다면 username에 관련된 튜플을 jwt에 넣고 jwt를 발급받고 토큰에 넣는다.
+            @PostMapping("/issue")
+            public JwtResponseDto IssueJwt(
+                    @RequestBody JwtRequestDto dto
+            ) {
+                //사용자가 제공한 username, password가 저장된 사용자인지 판단.
+                if (!manager.userExists(dto.getUsername())) //비어있지 않아야 한다. 저장되어진 아이디어야 하기 때문에
+                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+                UserDetails userDetails // 로그인 과정(사용자 인증 과정)
+                        = manager.loadUserByUsername(dto.getUsername());
+
+                //비밀번호 대조.
+                //암호문을 만들 때에는 sort라고 랜덤한 임의의 값이 추가가 된다.
+                //그래서 인코딩이 된 암호(userDeatils.getPassword())와
+                //날것의 암호를 다시 인코딩한 값(passwordEncoder.encode(dto.getPassword())을 비교한다고 해서
+                //같은 값이 나올거라는 보장을 할 수 없다.
+        //        if (userDetails.getPassword().equals(passwordEncoder.encode(dto.getPassword())))
+                //그래서 PasswordEncoder.matches() 사용. 날것의 비밀번호와 암호화된 비밀번호가 서로 매치되는지 비교할 수 있다.
+                //boolean matches(CharSequence rawPassword, String encodedPassword);
+                if (!passwordEncoder
+                        .matches(dto.getPassword(), userDetails.getPassword()))//날것비번, 암호화된 비번 대조.
+                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+
+                //JWT 발급, jwtTokenUtils.generateToken에 loadUserByUsername을 넣고,
+                //최종적으로 토큰에 저장하고 발급한다.
+                String jwt = jwtTokenUtils.generateToken(userDetails);
+                JwtResponseDto response = new JwtResponseDto();
+                response.setToken(jwt);
+                return response;
+            }
+        }
+        ```
+    4. jwt 기능 추가 - 토큰이 정당한지 확인한다. 정당하면 jwt 반환한다.
+
+        만들어진 토큰이 정당한지 확인한다.  
+        JwtTokenUtils에 정당한지 확인하는 메서드, 실제 데이터를 반환하는 메서드를 만든다.  
+        역직렬화 하여 확인(private final JwtParser jwtParser;)  
+        확인 후 정당한 jwt이면 페이로드 반환.(jwtParser.getBody())
+
+        ```java
+        private final JwtParser jwtParser;
+
+        //정상적인 jwt인지 판단하는 메서드
+        public boolean validate(String token){
+            //Parses the specified compact serialized JWS string based
+            //on the builder's current configuration state and returns the resulting Claims JWS instance.
+            //This is a convenience method that is usable if you are confident that the compact string argument reflects a Claims JWS.
+            //A Claims JWS is a JWT with a Claims body that has been cryptographically signed.
+            //If the compact string presented does not reflect a Claims JWS, an UnsupportedJwtException will be thrown.
+            //정상적이지 않은 jwt라면 예외(상황에 따라 다양한 예외)가 발생한다.
+            try{
+                jwtParser.parseClaimsJws(token); //sign을 사용하고 있으니 jwt가 아닌 jws를 사용할 것.
+                return true;
+            }catch (Exception e){
+                log.warn("invalid jwt " + e.getMessage());
+            }
+            return false;
+        }
+
+        //jwt가 정상적이면 실제 데이터(payload)를 반환하는 메서드
+        public Claims parseClaims(String token) {
+            return jwtParser
+                    .parseClaimsJws(token)
+                    .getBody(); //Returns the JWT body, either a String or a Claims instance.
+        }
+        ```
+
+    5. getmapping으로 토큰을 반환한다. controller에서 확인.
+        ```java
+        @GetMapping("/validate")
+            public Claims validateToken(
+                    @RequestParam String token
+            ) {
+                if (!jwtTokenUtils.validate(token)) //정단한 토큰인지 확인하기 위함. 역직렬화 하면서 검사.
+                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED); //false가 반환되면 예외처리.
+                return jwtTokenUtils.parseClaims(token); //정당한 토큰인지 확인이 되었으면 실제 데이터 body 반환.
+            }
+        ```
+
+    6. Filter을 사용해서 jwt가 전달이 되었을 때 인증이 된 사용자라는 것을 알려주자.
+       핕터 인터페이스 중 하나인 OncePterRequestFilter의 diFilterInternal()를 오버라이딩하여 사용. 요청당 한번만 호출된다.  
+       Spring Security에서 인증을 할 때는 Filter를 통해서 인증을 진행하고,  
+       지원하지 않는 방식으로 인증을 하고 싶을 경우 직접 filter을 만들어서 진행을 시켜주면 원하는 방식으로 인증을 할 수 있다.  
+       여기에서 사용자가 첨부한 jwt를 찾아서 해당하는 jwt가 정상인지 아닌지 판단하고 정상일 때 포함되어 있는 정보를 바탕으로 이 사용자는 인증되었다는 것을 알려준다.
+
+       Springboot에서 Filter 객체를 빈으로 등록하며 알아서 빈으로서 등록을 해준다.  
+       하지만 인증관련 Filter은 빈으로 등록하지 않는다.  
+       왜냐하면 webSecurityConfig 클래스에서 수동으로 등록을 해줘야 한다.  
+       근데 빈으로 등록된 객체를 등록을 하면 스프링 컨테이너에서 자체적으로 등록하고 security에서 한번 더 등록을 해서 필터가 2번 등록될 수 있어서 빈으로 등록하지 않는다.
+
+       
+        
+
+                    
 
